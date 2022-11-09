@@ -10,7 +10,7 @@ import {
   ActivityIndicator,
   Image,
   TouchableOpacity,
-  Modal,
+  Animated,
 } from "react-native";
 
 //import your components
@@ -25,6 +25,8 @@ function App() {
   const [data, setData] = useState([]);
   const [name, setName] = useState("");
   const [isLoading, setLoading] = useState(true);
+
+  const Yscroll = React.useRef(new Animated.Value(0)).current;
 
   const getData = async () => {
     try {
@@ -58,6 +60,7 @@ function App() {
       result.json().then((res) => {
         console.log("delete");
         console.log(res);
+        getData();
       });
     });
   }
@@ -78,6 +81,7 @@ function App() {
       result.json().then((res) => {
         console.log("update");
         console.log(res);
+        getData();
       });
     });
   }
@@ -103,6 +107,7 @@ function App() {
       result.json().then((res) => {
         console.log("create");
         console.log(res);
+        getData();
       });
     });
     setName("");
@@ -110,19 +115,7 @@ function App() {
 
   return (
     <View style={styles.container}>
-      <View
-        style={{
-          flexDirection: "row",
-          borderWidth: 1,
-          width: "100%",
-          height: 100,
-          borderRadius: 10,
-          margin: 10,
-          padding: 10,
-          alignItems: "center",
-          backgroundColor: "rgba(196, 196, 196, 0.41)",
-        }}
-      >
+      <View style={styles.input}>
         <IconFont5
           size={50}
           color={"#3167D0"}
@@ -159,19 +152,24 @@ function App() {
       {isLoading ? (
         <ActivityIndicator />
       ) : (
-        <FlatList
-          style={{ width: "100%" }}
+        <Animated.FlatList
+          style={{ marginTop: 20, width: "100%" }}
           data={data}
           extraData={data}
           keyExtractor={({ id }, index) => id}
           renderItem={({ item, index }) => (
             <PokeCard
+              Yscroll={Yscroll}
               data={item}
               key={item.username}
               index={index}
               onDelete={() => onDelete(item.id)}
               onUpdateApp={() => onUpdate(item.id, name)}
             />
+          )}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: Yscroll } } }],
+            { useNativeDriver: true }
           )}
         />
       )}
@@ -186,7 +184,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     margin: 20,
   },
-
+  input: {
+    flexDirection: "row",
+    borderWidth: 1,
+    width: "100%",
+    height: 100,
+    borderRadius: 10,
+    margin: 10,
+    padding: 10,
+    alignItems: "center",
+    backgroundColor: "rgba(196, 196, 196, 0.41)",
+  },
   textWhile: {
     color: "#ffff",
   },
